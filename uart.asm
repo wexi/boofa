@@ -5,79 +5,45 @@
 ; it under the terms of the GNU General Public License version 2 as
 ; published by the Free Software Foundation.
 
-uart_init:
-        push gen1
+.equ UBRRVAL = F_CPU/(BAUD*16)-1
 
+uart_init:
         ; set baud rate
-        ldi gen1, LOW(UBRRVAL)
-        out UBRRL, gen1
-        ldi gen1, HIGH(UBRRVAL)
-.if UBRRH > 0x3f
-        sts UBRRH, gen1
-.else
-        out UBRRH, gen1
-.endif
+        ldi	gen1, LOW(UBRRVAL)
+        out_	UBRRL, gen1
+        ldi	gen1, HIGH(UBRRVAL)
+        out_	UBRRH, gen1
 
         ; frame format: 8 bit, no parity, 1 bit
-        ldi gen1, UCSRC_SELECT | (1 << UCSZ1) | (1 << UCSZ0)
-.if UCSRC > 0x3f
-        sts UCSRC, gen1
-.else
-        out UCSRC, gen1
-.endif
+        ldi	gen1, UCSRC_SELECT | (1 << UCSZ1) | (1 << UCSZ0)
+        out_	UCSRC, gen1
 
         ; enable serial receiver and transmitter
-        ldi gen1, (1 << RXEN) | (1 << TXEN)
-        out UCSRB, gen1
+        ldi	gen1, (1 << RXEN) | (1 << TXEN)
+        out_	UCSRB, gen1
 
-        pop gen1
         ret
 
+uart_xmt:
+        sbis_	UCSRA, UDRE
+        rjmp	uart_xmt	; wait until transmit buffer is empty
+        out_	UDR, gen1
+        ret
+	
+uart_send0:
+	rcall	uart_xmt
 uart_send:
-        ; wait until transmit buffer is empty
-        sbis UCSRA, UDRE
-        rjmp uart_send
-
-        out UDR, gen1
+        lpm_	gen1, Z+
+	tst	gen1
+	brne	uart_send0
+	ret
+	
+uart_rec0:
+        in_	gen1, UDR
+uart_rec:			; gen1 (out): byte received
+        sbis_	UCSRA, RXC
+        rjmp	uart_rec
+	sbic_	UCSRA, FE
+	rjmp	uart_rec0
+        in_	gen1, UDR
         ret
-
-uart_send_hex:
-        push gen1
-        push gen2
-
-        mov gen2, gen1
-        andi gen2, 0x0f ; lower nibble in gen2
-
-        swap gen1
-        andi gen1, 0x0f ; upper nibble in gen1
-
-        subi gen2, -'0' ; add '0'
-        cpi gen2, '9' + 1
-        brlo uart_send_hex_lower_ok
-        subi gen2, -7 ; add 7 to reach 'A'-'F'
-uart_send_hex_lower_ok:
-
-        subi gen1, -'0' ; add '0'
-        cpi gen1, '9' + 1
-        brlo uart_send_hex_upper_ok
-        subi gen1, -7 ; add 7 to reach 'A'-'F'
-uart_send_hex_upper_ok:
-
-        rcall uart_send
-        mov gen1, gen2
-        rcall uart_send
-
-        pop gen2
-        pop gen1
-        ret
-
-        ; receives a byte
-uart_rec: ; gen1 (out): byte received
-        ; check receive buffer
-        sbis UCSRA, RXC
-        rjmp uart_rec
-
-        in gen1, UDR
-
-        ret
-

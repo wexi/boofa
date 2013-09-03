@@ -1,24 +1,31 @@
+# EXTRA := -D DEBUG
+EXTRA ?= 
 
 MAIN := boofa
 ASM := $(MAIN).asm
 HEX := $(MAIN).hex
-EEP_HEX := $(MAIN).eep.hex
-LIST := $(MAIN).list
-MAP := $(MAIN).map
-OBJ := $(MAIN).obj
-COF := $(MAIN).cof
+LIST := $(MAIN).lst
 SOURCES := $(wildcard *.asm)
+DEF := can128def.inc
+MFC := c128
+
+ATMEL := $(HOME)/avr/Atmel/AVR\ Tools/AvrAssembler2
+XASM := wine $(ATMEL)/avrasm2.exe -fI -I $(ATMEL)/Appnotes
+DUDE := avrdude -P usb -c jtag2 -p $(MFC)
 
 all: $(HEX)
 
+$(HEX): $(SOURCES) Makefile
+	$(XASM) $(EXTRA) -o $(HEX) -l $(LIST) -i $(DEF) $(ASM)
+
+install: $(HEX)
+	$(DUDE) -e -U flash:w:$(HEX):i -U efuse:w:0xfd:m -U hfuse:w:0xbe:m -U lfuse:w:0xcf:m
+
+verify: $(HEX)
+	$(DUDE) -U flash:v:$(HEX):i -U efuse:v:0xfd:m -U hfuse:v:0xbe:m -U lfuse:v:0xcf:m
+
 clean:
-	rm -f $(HEX) $(LIST) $(MAP) $(EEP_HEX) $(OBJ) $(COF)
+	rm -f $(HEX) $(LIST)
 
-flash: $(HEX)
-	avrdude -y -p m16 -U flash:w:$<
-
-$(HEX): $(SOURCES)
-	avra -l $(LIST) -m $(MAP) $(ASM)
-
-.PHONY: all clean flash
+.PHONY: all clean install
 

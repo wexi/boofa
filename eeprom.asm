@@ -6,66 +6,31 @@
 ; published by the Free Software Foundation.
 
         ; reads a single byte from eeprom memory
-eeprom_read: ; addrh:addrl (in,out): address
+eeprom_read: ; XH:XL (in,out): address
              ; gen1 (out): data
-        push gen2
-        
-        ; eeprom access is timing critical
-        ; disable interrupts
-        in gen2, SREG
-        cli
-        
-        ; read eeprom
-        out EEARH, addrh
-        out EEARL, addrl
-        sbi EECR, EERE
-        in gen1, EEDR
-        
-        ; restore interrupts
-        out SREG, gen2
+        sbic_	EECR, EEWE
+        rjmp	eeprom_read
+	
+        out_	EEARH, XH
+        out_	EEARL, XL
+        sbi_	EECR, EERE
+        in_	gen1, EEDR
 
-        ; increment address
-        ldi gen2, 1
-        add addrl, gen2
-        clr gen2
-        adc addrh, gen2
-
-        pop gen2
         ret
 
         ; writes a single byte to eeprom memory
-eeprom_write: ; addrh:addrl (in,out): address
+eeprom_write: ; XH:XL (in,out): address
               ; gen1 (in): data byte
-        push gen2
 
-        ; eeprom access is timing critical
-        ; disable interrupts
-        in gen2, SREG
-        cli
+        sbic_	EECR, EEWE
+        rjmp	eeprom_write
+
+        out_	EEARH, XH
+        out_	EEARL, XL
+        out_	EEDR, gen1
+
+        sbi_	EECR, EEMWE
+        sbi_	EECR, EEWE
         
-        ; prepare eeprom writing
-        out EEARH, addrh
-        out EEARL, addrl
-        out EEDR, gen1
-
-        ; start write
-        sbi EECR, EEMWE
-        sbi EECR, EEWE
-
-        ; wait for eeprom being ready
-eeprom_write_wait:
-        sbic EECR, EEWE
-        rjmp eeprom_write_wait
-        
-        ; restore interrupts
-        out SREG, gen2
-
-        ; increment address
-        ldi gen2, 1
-        add addrl, gen2
-        clr gen2
-        adc addrh, gen2
-
-        pop gen2
         ret
 

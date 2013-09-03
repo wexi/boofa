@@ -7,45 +7,20 @@
 
 bits_read: ; gen1 (in): fuse or lock identifier
            ; gen1 (out): requested fuse or lock bits
-        push ZL
-        push ZH
+        mov	ZL, gen1
+        clr	ZH
 
-        mov ZL, gen1
-        clr ZH
-
-        ldi gen1, (1 << BLBSET) | (1 << SPMEN)
-.if SPMCSR > 0x3f
-        sts SPMCSR, gen1
-.else
-        out SPMCSR, gen1
-.endif
-        lpm gen1, Z
-
-        pop ZH
-        pop ZL
+        ldi	gen1, (1 << BLBSET) | (1 << SPMEN)
+        out_	SPMCSR, gen1
+        lpm	gen1, Z
         ret
 
 bits_write: ; gen1 (in): fuse or lock identifier
             ; r0 (in): fuse or lock bits to write
-        push gen1
-        push ZL
-        push ZH
+        mov	ZL, gen1
+        clr	ZH
 
-        mov ZL, gen1
-        clr ZH
-
-        ldi gen1, (1 << BLBSET) | (1 << SPMEN)
-.if SPMCSR > 0x3f
-        sts SPMCSR, gen1
-.else
-        out SPMCSR, gen1
-.endif
-        spm
-
-        rcall spm_wait
-
-        pop ZH
-        pop ZL
-        pop gen1
-        ret
+        ldi	gen1, (1 << BLBSET) | (1 << SPMEN)
+        out_	SPMCSR, gen1
+        rjmp	spm_do
 
