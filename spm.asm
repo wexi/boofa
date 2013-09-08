@@ -6,8 +6,8 @@
 ; published by the Free Software Foundation.
 
 spm_rww_enable:
-        ldi	gen1, (1 << RWWSRE) | (1 << SPMEN)
-        out_	SPMCSR, gen1
+        ldi	genl, (1 << RWWSRE) | (1 << SPMEN)
+        out_	SPMCSR, genl
 spm_do:
 	spm
 spm_doing:

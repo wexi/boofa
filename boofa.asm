@@ -10,11 +10,17 @@
 
 ; put boot loader into boot section
 .org	DEVBOOT
-	clr	zerol		;always
-	clr	zeroh		; zero
+	clr	zerol
+	clr	zeroh
+        ldi	genl, LOW(RAMEND)
+        out_	SPL, genl
+        ldi	genl, HIGH(RAMEND)
+        out_	SPH, genl
+	
+	rcall	uart_init
+	rcall	uart_drain
 	
 	boot	boofa_load
-	
 boofa_appl:
 .ifndef	DEBUG
 	movw	ZH:ZL, zeroh:zerol ;launch application if possible
@@ -27,122 +33,136 @@ boofa_appl:
 boofa_load:
 	boofa
 
-        ldi	gen1, LOW(RAMEND)
-        out_	SPL, gen1
-        ldi	gen1, HIGH(RAMEND)
-        out_	SPH, gen1
 	movw	XH:XL, zeroh:zerol ;reset address pointer
-	rcall	uart_init
 
 boofa_loop:			; main loop
         rcall	uart_rec
 	
         ; auto-increment status
 boofa_cmd_a:
-        cpi	gen1, 'a'
+        cpi	genl, 'a'
         brne	boofa_cmd_A_
 
-        ldi	gen1, 'Y'
+        ldi	genl, 'Y'
         rcall	uart_xmt
 
         rjmp	boofa_loop
 
         ; set address
 boofa_cmd_A_:
-        cpi	gen1, 'A'
+        cpi	genl, 'A'
         brne	boofa_cmd_e
 
         rcall	uart_rec
-        mov	XH, gen1
+        mov	XH, genl
         rcall	uart_rec
-        mov	XL, gen1
+        mov	XL, genl
 
-        ldi	gen1, CR
+        ldi	genl, CR
         rcall	uart_xmt
 
         rjmp	boofa_loop
 
         ; erase chip
 boofa_cmd_e:
-        cpi	gen1, 'e'
+        cpi	genl, 'e'
         brne	boofa_cmd_b
 	boofa_prog_test	boofa_cmd_unknown
 
         rcall	flash_erase
 
-        ldi	gen1, CR
+        ldi	genl, CR
         rcall	uart_xmt
 
         rjmp	boofa_loop
 
         ; block support
 boofa_cmd_b:
-        cpi	gen1, 'b'
+        cpi	genl, 'b'
         brne	boofa_cmd_B_
 
         ; we support block writing
-        ldi	gen1, 'Y'
+        ldi	genl, 'Y'
         rcall	uart_xmt
 
-        ; return blocksize in bytes
-        ldi	gen1, HIGH(PAGESIZE << 1)
+        ; return buffer-size in bytes
+        ldi	genl, HIGH(SRAM_SIZE/2) ;largest available power of two
         rcall	uart_xmt
-        ldi	gen1, LOW(PAGESIZE << 1)
+        ldi	genl, LOW(SRAM_SIZE/2)
         rcall	uart_xmt
 
         rjmp	boofa_loop
 
+boofa_fatal_error:
+	boofa_prog_off
+	rjmp	boofa_cmd_unknown	
+
         ; start block load
 boofa_cmd_B_:
-        cpi	gen1, 'B'
-        brne	boofa_cmd_g
+	ldi	genh, 'B'
+	cpse	genl, genh
+	rjmp	boofa_cmd_g
 	boofa_prog_test	boofa_cmd_unknown
 
-        ; get block size
-        rcall	uart_rec
-        mov	WH, gen1
-        rcall	uart_rec
-        mov	WL, gen1
+        ; get block-size
+        rcall	uart_recw
+        movw	WH:WL, genh:genl
+	subiw	gen, 1
+	cpiw	gen, SRAM_SIZE/2
+	brsh	boofa_fatal_error ;zero or more than buffer capacity???
 	
-        ; get data type
-        rcall	uart_rec
+        ; get type & data into SRAM
+	movw	YH:YL, WH:WL
+	ldiw	Z, SRAM_START
+boofa_data:
+	rcall	uart_rec
+	st	Z+, genl
+	sbiw	YH:YL, 1
+	brcc	boofa_data	;block-size+1 to account for F/E type
 
+	ldiw	Y, SRAM_START
+	ld	genl, Y+
 boofa_cmd_B_F:
-        cpi	gen1, 'F'
+        cpi	genl, 'F'
         brne	boofa_cmd_B_E
 
-	cpi	WL, LOW(PAGESIZE << 1)
-	brne	boofa_cmd_B_unknown
-        cpi	WH, HIGH(PAGESIZE << 1)
-	brne	boofa_cmd_B_unknown
+	sbrc	WL, 0
+	rjmp	boofa_fatal_error ;odd byte count???
 
-	movw	YH:YL, XH:XL
-        movw	ZH:ZL, zeroh:zerol
-
-boofa_cmd_B_F_word:
-	rcall	uart_rec
-	mov	r0, gen1
-	rcall	uart_rec
-	xchg	r1, gen1
-	
+boofa_flash_pages:
+	cpiw	X, DEVBOOT
+	brsh	boofa_fatal_error ;overwrite boofa???
+        movw	ZH:ZL, XH:XL
+	andiw	Z, PAGESIZE-1
+	lsl	ZL
+	rol	ZH
+boofa_flash_buffer:
+	ld	r0, Y+
+	ld	r1, Y+
         rcall	flash_write_word
-	adiw	ZH:ZL, 2
-	adiw	YH:YL, 1
 	sbiw	WH:WL, 2
-        brne	boofa_cmd_B_F_word
+	adiw	XH:XL, 1
+	adiw	ZH:ZL, 2
+	cpiw	Z, PAGESIZE << 1
+	breq	boofa_flash_page
+	tstw	W
+	brne	boofa_flash_buffer
 	
+boofa_flash_page:
+	sbiw	XH:XL, 1
         rcall	flash_set_addr
         rcall	flash_write_page
-	movw	XH:XL, YH:YL
-
-        rjmp	boofa_cmd_B_common
+	adiw	XH:XL, 1
+	tstw	W
+	brne	boofa_flash_pages
+	rjmp	boofa_cmd_B_common
 
 boofa_cmd_B_E:
-        cpi	gen1, 'E'
+        cpi	genl, 'E'
         brne	boofa_cmd_B_unknown
 
 boofa_cmd_B_E_byte:
-        rcall	uart_rec
+	ld	genl, Y+
         rcall	eeprom_write
 	adiw	XH:XL, 1
 	sbiw	WH:WL, 1
@@ -150,7 +170,7 @@ boofa_cmd_B_E_byte:
 
 boofa_cmd_B_common:
         ; answer
-        ldi	gen1, CR
+        ldi	genl, CR
         rcall	uart_xmt
         rjmp	boofa_loop
 boofa_cmd_B_unknown:
@@ -158,26 +178,26 @@ boofa_cmd_B_unknown:
 
         ; start block read
 boofa_cmd_g:
-        cpi	gen1, 'g'
+        cpi	genl, 'g'
         brne	boofa_cmd_R_
 
         ; get block size
         rcall	uart_rec
-        mov	WH, gen1
+        mov	WH, genl
         rcall	uart_rec
-        mov	WL, gen1
+        mov	WL, genl
 
         ; get data type
         rcall	uart_rec
 boofa_cmd_g_F:
-        cpi	gen1, 'F'
+        cpi	genl, 'F'
         brne	boofa_cmd_g_E
 
 boofa_cmd_g_F_word:
         rcall	flash_read_word
 
 	rcall	uart_xmt
-	mov	gen1, gen2
+	mov	genl, genh
 	rcall	uart_xmt
 	
 	adiw	XH:XL, 1
@@ -187,7 +207,7 @@ boofa_cmd_g_F_word:
         rjmp	boofa_cmd_g_common
 
 boofa_cmd_g_E:
-        cpi	gen1, 'E'
+        cpi	genl, 'E'
         brne	boofa_cmd_g_unknown
 
 boofa_cmd_g_E_byte:
@@ -204,7 +224,7 @@ boofa_cmd_g_unknown:
 
         ; read program memory
 boofa_cmd_R_:
-        cpi	gen1, 'R'
+        cpi	genl, 'R'
         brne	boofa_cmd_D_
 
         ; read a single word from flash
@@ -212,16 +232,16 @@ boofa_cmd_R_:
 	adiw	XH:XL, 1
 
         ; send memory word
-	xchg	gen1, gen2
+	xchg	genl, genh
         rcall	uart_xmt
-	mov	gen1, gen2
+	mov	genl, genh
 	rcall	uart_xmt
 
         rjmp	boofa_loop
 
         ; write eeprom memory
 boofa_cmd_D_:
-        cpi	gen1, 'D'
+        cpi	genl, 'D'
         brne	boofa_cmd_d
 	boofa_prog_test	boofa_cmd_unknown
         rcall	uart_rec
@@ -231,7 +251,7 @@ boofa_cmd_D_:
 
         ; read eeprom memory
 boofa_cmd_d:
-        cpi	gen1, 'd'
+        cpi	genl, 'd'
         brne	boofa_cmd_l
         rcall	eeprom_read
         rcall	uart_xmt
@@ -240,21 +260,21 @@ boofa_cmd_d:
 
         ; write lockbits
 boofa_cmd_l:
-        cpi	gen1, 'l'
+        cpi	genl, 'l'
         brne	boofa_cmd_r
 	boofa_prog_test	boofa_cmd_unknown
 
         rcall	uart_rec
         rcall	lock_write
 
-        ldi	gen1, CR
+        ldi	genl, CR
         rcall	uart_xmt
 
         rjmp	boofa_loop
 
         ; read lockbits
 boofa_cmd_r:
-        cpi	gen1, 'r'
+        cpi	genl, 'r'
         brne	boofa_cmd_F_
 
         rcall	lock_read
@@ -264,7 +284,7 @@ boofa_cmd_r:
 
         ; read fuse bits
 boofa_cmd_F_:
-        cpi	gen1, 'F'
+        cpi	genl, 'F'
         brne	boofa_cmd_N_
 
         rcall	fuse_l_read
@@ -274,7 +294,7 @@ boofa_cmd_F_:
 
         ; read high fuse bits
 boofa_cmd_N_:
-        cpi	gen1, 'N'
+        cpi	genl, 'N'
         brne	boofa_cmd_Q_
 
         rcall	fuse_h_read
@@ -284,7 +304,7 @@ boofa_cmd_N_:
 
         ; read extended fuse bits
 boofa_cmd_Q_:
-        cpi	gen1, 'Q'
+        cpi	genl, 'Q'
         brne	boofa_cmd_P_
 
         rcall	fuse_e_read
@@ -294,10 +314,10 @@ boofa_cmd_Q_:
 
         ; enter programming mode
 boofa_cmd_P_:
-        cpi	gen1, 'P'
+        cpi	genl, 'P'
         brne	boofa_cmd_L_
 
-        ldi	gen1, CR
+        ldi	genl, CR
         rcall	uart_xmt
 	boofa_prog_on
 	
@@ -305,10 +325,10 @@ boofa_cmd_P_:
 
         ; leave programming mode
 boofa_cmd_L_:
-        cpi	gen1, 'L'
+        cpi	genl, 'L'
         brne	boofa_cmd_E_
 
-        ldi	gen1, CR
+        ldi	genl, CR
         rcall	uart_xmt
 	boofa_prog_off
 
@@ -316,10 +336,10 @@ boofa_cmd_L_:
 
         ; exit bootloader
 boofa_cmd_E_:
-        cpi	gen1, 'E'
+        cpi	genl, 'E'
         brne	boofa_cmd_p
 
-        ldi	gen1, CR
+        ldi	genl, CR
         rcall	uart_xmt
 	boofa_prog_off
 	boofa_led_off
@@ -328,37 +348,37 @@ boofa_cmd_E_:
 
         ; get programmer type
 boofa_cmd_p:
-        cpi	gen1, 'p'
+        cpi	genl, 'p'
         brne	boofa_cmd_t
 
         ; serial programmer
-        ldi	gen1, 'S'
+        ldi	genl, 'S'
         rcall	uart_xmt
 
         rjmp	boofa_loop
 
         ; return supported device codes
 boofa_cmd_t:
-        cpi	gen1, 't'
+        cpi	genl, 't'
         brne	boofa_cmd_x
 
         ; only the device we are running on
-        ldi	gen1, DEVCODE
+        ldi	genl, DEVCODE
         rcall	uart_xmt
         ; send list terminator
-        ldi	gen1, 0
+        ldi	genl, 0
         rcall	uart_xmt
 
         rjmp	boofa_loop
 
         ; set led
 boofa_cmd_x:
-        cpi	gen1, 'x'
+        cpi	genl, 'x'
         brne	boofa_cmd_y
 
         rcall	uart_rec
 
-        ldi	gen1, CR
+        ldi	genl, CR
         rcall	uart_xmt
 
 	boofa_led_on
@@ -366,12 +386,12 @@ boofa_cmd_x:
 
         ; clear led
 boofa_cmd_y:
-        cpi	gen1, 'y'
+        cpi	genl, 'y'
         brne	boofa_cmd_T_
 
         rcall	uart_rec
 
-        ldi	gen1, CR
+        ldi	genl, CR
         rcall	uart_xmt
 
 	boofa_led_off
@@ -379,21 +399,21 @@ boofa_cmd_y:
 
         ; set device type
 boofa_cmd_T_:
-        cpi	gen1, 'T'
+        cpi	genl, 'T'
         brne	boofa_cmd_S_
 
         rcall	uart_rec
-        cpi	gen1, DEVCODE
+        cpi	genl, DEVCODE
         brne	boofa_cmd_unknown
 
-        ldi	gen1, CR
+        ldi	genl, CR
         rcall	uart_xmt
 
         rjmp	boofa_loop
 
         ; return programmer identifier
 boofa_cmd_S_:
-        cpi	gen1, 'S'
+        cpi	genl, 'S'
         brne	boofa_cmd_V_
 
 	ldz	boofa_ident
@@ -404,41 +424,55 @@ boofa_ident:
 
         ; return software version
 boofa_cmd_V_:
-        cpi	gen1, 'V'
+        cpi	genl, 'V'
         brne	boofa_cmd_s
 
-        ldi	gen1, '0'
+        ldi	genl, '0'
         rcall	uart_xmt
-        ldi	gen1, '1'
+        ldi	genl, '1'
         rcall	uart_xmt
 
         rjmp	boofa_loop
 
         ; return signature bytes
 boofa_cmd_s:
-        cpi	gen1, 's'
-        brne	boofa_cmd_ESC
+        cpi	genl, 's'
+        brne	boofa_cmd_z
 
-        ldi	gen1, SIGNATURE_002
+        ldi	genl, SIGNATURE_002
         rcall	uart_xmt
-        ldi	gen1, SIGNATURE_001
+        ldi	genl, SIGNATURE_001
         rcall	uart_xmt
-        ldi	gen1, SIGNATURE_000
+        ldi	genl, SIGNATURE_000
         rcall	uart_xmt
 
         rjmp	boofa_loop
 
+	; extension: report address 
+boofa_cmd_z:
+	cpi	genl, 'z'
+	brne	boofa_cmd_ESC
+	
+	mov	genl, XH
+	rcall	uart_xmt
+	mov	genl, XL
+	rcall	uart_xmt
+
+	rjmp	boofa_loop
+
         ; sync
 boofa_cmd_ESC:
-        cpi	gen1, 0x1b
+        cpi	genl, 0x1b
         brne	boofa_cmd_unknown
 
         rjmp	boofa_loop
 
         ; unknown commands
 boofa_cmd_unknown:
-        ldi	gen1, '?'
+	rcall	uart_drain
+        ldi	genl, '?'
         rcall	uart_xmt
+	
         rjmp	boofa_loop
 
 .include "bits.asm"

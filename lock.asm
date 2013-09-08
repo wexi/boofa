@@ -5,14 +5,14 @@
 ; it under the terms of the GNU General Public License version 2 as
 ; published by the Free Software Foundation.
 
-lock_read: ; gen1 (out): lock bits
-        ldi	gen1, 0x01
+lock_read: ; genl (out): lock bits
+        ldi	genl, 0x01
         rjmp	bits_read
 
-lock_write: ; gen1 (in): lock bits to write
-        mov	r0, gen1
-        ldi	gen1, 0xc3
-        or	r0, gen1
-        ldi	gen1, 0x01
+lock_write: ; genl (in): lock bits to write
+        mov	r0, genl
+        ldi	genl, 0xc3
+        or	r0, genl
+        ldi	genl, 0x01
         rjmp	bits_write
 

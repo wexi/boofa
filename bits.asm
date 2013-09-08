@@ -5,22 +5,22 @@
 ; it under the terms of the GNU General Public License version 2 as
 ; published by the Free Software Foundation.
 
-bits_read: ; gen1 (in): fuse or lock identifier
-           ; gen1 (out): requested fuse or lock bits
-        mov	ZL, gen1
+bits_read: ; genl (in): fuse or lock identifier
+           ; genl (out): requested fuse or lock bits
+        mov	ZL, genl
         clr	ZH
 
-        ldi	gen1, (1 << BLBSET) | (1 << SPMEN)
-        out_	SPMCSR, gen1
-        lpm	gen1, Z
+        ldi	genl, (1 << BLBSET) | (1 << SPMEN)
+        out_	SPMCSR, genl
+        lpm	genl, Z
         ret
 
-bits_write: ; gen1 (in): fuse or lock identifier
+bits_write: ; genl (in): fuse or lock identifier
             ; r0 (in): fuse or lock bits to write
-        mov	ZL, gen1
+        mov	ZL, genl
         clr	ZH
 
-        ldi	gen1, (1 << BLBSET) | (1 << SPMEN)
-        out_	SPMCSR, gen1
+        ldi	genl, (1 << BLBSET) | (1 << SPMEN)
+        out_	SPMCSR, genl
         rjmp	spm_do
 

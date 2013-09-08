@@ -11,19 +11,19 @@ flash_erase:
 flash_erase_page:
         rcall	flash_set_addr
 
-        ldi	gen1, (1 << PGERS) | (1 << SPMEN)
-        out_	SPMCSR, gen1
+        ldi	genl, (1 << PGERS) | (1 << SPMEN)
+        out_	SPMCSR, genl
         rcall	spm_do
 
-        ldi	gen1, LOW(PAGESIZE)
-        add	XL, gen1
-        ldi	gen1, HIGH(PAGESIZE)
-        adc	XH, gen1
+        ldi	genl, LOW(PAGESIZE)
+        add	XL, genl
+        ldi	genl, HIGH(PAGESIZE)
+        adc	XH, genl
 
-        ldi	gen1, LOW(DEVBOOT)
-        cp	XL, gen1
-        ldi	gen1, HIGH(DEVBOOT)
-        cpc	XH, gen1
+        ldi	genl, LOW(DEVBOOT)
+        cp	XL, genl
+        ldi	genl, HIGH(DEVBOOT)
+        cpc	XH, genl
         brlo	flash_erase_page
 
 	movw	XH:XL, zeroh:zerol
@@ -31,18 +31,18 @@ flash_erase_page:
 
 flash_read_word:
         rcall	flash_set_addr
-        lpm_	gen1, Z+
-        lpm_	gen2, Z+
+        lpm_	genl, Z+
+        lpm_	genh, Z+
         ret
         
 flash_write_word:
-        ldi	gen1, (1 << SPMEN)
-        out_	SPMCSR, gen1
+        ldi	genl, (1 << SPMEN)
+        out_	SPMCSR, genl
         rjmp	spm_do
 
 flash_write_page:
-        ldi	gen1, (1 << PGWRT) | (1 << SPMEN)
-        out_	SPMCSR, gen1
+        ldi	genl, (1 << PGWRT) | (1 << SPMEN)
+        out_	SPMCSR, genl
         rcall	spm_do
         rjmp	spm_rww_enable
 

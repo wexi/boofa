@@ -7,27 +7,27 @@
 
         ; reads a single byte from eeprom memory
 eeprom_read: ; XH:XL (in,out): address
-             ; gen1 (out): data
+             ; genl (out): data
         sbic_	EECR, EEWE
         rjmp	eeprom_read
 	
         out_	EEARH, XH
         out_	EEARL, XL
         sbi_	EECR, EERE
-        in_	gen1, EEDR
+        in_	genl, EEDR
 
         ret
 
         ; writes a single byte to eeprom memory
 eeprom_write: ; XH:XL (in,out): address
-              ; gen1 (in): data byte
+              ; genl (in): data byte
 
         sbic_	EECR, EEWE
         rjmp	eeprom_write
 
         out_	EEARH, XH
         out_	EEARL, XL
-        out_	EEDR, gen1
+        out_	EEDR, genl
 
         sbi_	EECR, EEMWE
         sbi_	EECR, EEWE

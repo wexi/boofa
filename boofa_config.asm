@@ -35,17 +35,47 @@
 
 .def zerol = r2
 .def zeroh = r3
-.def gen1 = r16
-.def gen2 = r17
-.def spad = r18			;temporary macro use
+.def genl = r16
+.def genh = r17
+	
+.def spad = r20			;for temporary macro use only
 
 .def WL = r24			;W is adiw/sbiw capable
 .def WH = r25
 ; X - AVR109 address pointer
 
+.macro	ldiw
+	ldi	@0L, LOW(@1)
+	ldi	@0H, HIGH(@1)
+.endmacro
+
+.macro	subiw
+	subi	@0L, LOW(@1)
+	sbci	@0H, HIGH(@1)
+.endmacro
+
+.macro	addiw
+	subiw	@0,$10000-@1
+.endmacro
+
+.macro	andiw
+	andi	@0L, LOW(@1)
+	andi	@0H, HIGH(@1)
+.endmacro
+
+.macro	cpiw
+	ldi	spad, HIGH(@1)
+	cpi	@0L, LOW(@1)
+	cpc	@0H, spad
+.endmacro	
+
+.macro	tstw
+	mov	spad, @0L
+	or	spad, @0H
+.endmacro
 	
 .macro	in_
-.if (@1 < $40)
+.if (@1) < 64
 	in	@0, @1
 .else
 	lds	@0, @1
@@ -53,7 +83,7 @@
 .endmacro
 
 .macro	out_
-.if (@0 < $40)
+.if (@0) < 64
 	out	@0, @1
 .else
 	sts	@0, @1
@@ -61,7 +91,7 @@
 .endmacro
 
 .macro	sbi_
-.if (@0 < $20)
+.if (@0) < 32
 	sbi	@0, @1
 .else
 	in_	spad, @0
@@ -71,7 +101,7 @@
 .endmacro
 
 .macro	cbi_
-.if (@0 < $20)
+.if (@0) < 32
 	cbi	@0, @1
 .else
 	in_	spad, @0
@@ -81,7 +111,7 @@
 .endmacro
 
 .macro	sbis_
-.if (@0 < $20)
+.if (@0) < 32
 	sbis	@0, @1
 .else
 	in_	spad, @0
@@ -90,7 +120,7 @@
 .endmacro
 
 .macro	sbic_
-.if (@0 < $20)
+.if (@0) < 32
 	sbic	@0, @1
 .else
 	in_	spad, @0
