@@ -53,10 +53,8 @@ boofa_cmd_A_:
         cpi	genl, 'A'
         brne	boofa_cmd_e
 
-        rcall	uart_rec
-        mov	XH, genl
-        rcall	uart_rec
-        mov	XL, genl
+        rcall	uart_recw
+        movw	XH:XL, genh:genl
 
         ldi	genl, CR
         rcall	uart_xmt
@@ -86,10 +84,8 @@ boofa_cmd_b:
         rcall	uart_xmt
 
         ; return buffer-size in bytes
-        ldi	genl, HIGH(SRAM_SIZE/2) ;largest available power of two
-        rcall	uart_xmt
-        ldi	genl, LOW(SRAM_SIZE/2)
-        rcall	uart_xmt
+	ldiw	gen, SRAM_SIZE/2	;largest available power of two
+        rcall	uart_xmtw
 
         rjmp	boofa_loop
 
@@ -182,10 +178,8 @@ boofa_cmd_g:
         brne	boofa_cmd_R_
 
         ; get block size
-        rcall	uart_rec
-        mov	WH, genl
-        rcall	uart_rec
-        mov	WL, genl
+        rcall	uart_recw
+        movw	WH:WL, genh:genl
 
         ; get data type
         rcall	uart_rec
@@ -453,10 +447,8 @@ boofa_cmd_z:
 	cpi	genl, 'z'
 	brne	boofa_cmd_ESC
 	
-	mov	genl, XH
-	rcall	uart_xmt
-	mov	genl, XL
-	rcall	uart_xmt
+	movw	genh:genl, XH:XL
+	rcall	uart_xmtw
 
 	rjmp	boofa_loop
 

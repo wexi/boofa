@@ -24,6 +24,10 @@ uart_init:
 
         ret
 
+uart_xmtw:
+        sbis_	UCSRA, UDRE
+        rjmp	uart_xmtw	; wait until transmit buffer is empty
+        out_	UDR, genh
 uart_xmt:
         sbis_	UCSRA, UDRE
         rjmp	uart_xmt	; wait until transmit buffer is empty
