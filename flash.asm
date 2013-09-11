@@ -9,24 +9,19 @@ flash_erase:
         movw	XH:XL, zeroh:zerol
 
 flash_erase_page:
-        rcall	flash_set_addr
+	mov	genh, XH
+	lsr	genh
+	cpi	genh, DEVBOOT/512
+	breq	flash_erase_next ;skip bootloader area
 
+        rcall	flash_set_addr
         ldi	genl, (1 << PGERS) | (1 << SPMEN)
         out_	SPMCSR, genl
         rcall	spm_do
 
-        ldi	genl, LOW(PAGESIZE)
-        add	XL, genl
-        ldi	genl, HIGH(PAGESIZE)
-        adc	XH, genl
-
-        ldi	genl, LOW(DEVBOOT)
-        cp	XL, genl
-        ldi	genl, HIGH(DEVBOOT)
-        cpc	XH, genl
-        brlo	flash_erase_page
-
-	movw	XH:XL, zeroh:zerol
+flash_erase_next:
+	addiw	X, PAGESIZE
+	brne	flash_erase_page
         ret
 
 flash_read_word:
