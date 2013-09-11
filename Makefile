@@ -1,5 +1,6 @@
-# EXTRA := -D DEBUG
-EXTRA ?= 
+# will not launch application if DEBUG is defined
+# will place BOOFA at LARGEBOOTSTART if BIGFOOT is defined
+EXTRA := -D BIGFOOT
 
 MAIN := boofa
 ASM := $(MAIN).asm
@@ -19,10 +20,11 @@ $(HEX): $(SOURCES) Makefile
 	$(XASM) $(EXTRA) -o $(HEX) -l $(LIST) -i $(DEF) $(ASM)
 
 install: $(HEX)
+ifeq (,$(findstring BIGFOOT,$(EXTRA)))
 	$(DUDE) -e -U flash:w:$(HEX):i -U efuse:w:0xfd:m -U hfuse:w:0xbe:m -U lfuse:w:0xcf:m
-
-verify: $(HEX)
-	$(DUDE) -U flash:v:$(HEX):i -U efuse:v:0xfd:m -U hfuse:v:0xbe:m -U lfuse:v:0xcf:m
+else
+	$(DUDE) -e -U flash:w:$(HEX):i -U efuse:w:0xfd:m -U hfuse:w:0xb8:m -U lfuse:w:0xcf:m
+endif
 
 clean:
 	rm -f $(HEX) $(LIST)

@@ -6,15 +6,16 @@
 ; published by the Free Software Foundation.
 
 ;; .listmac
-.ifndef F_CPU
+
+#ifdef BIGFOOT
+.equ DEVBOOT = LARGEBOOTSTART
+#else
+.equ DEVBOOT = SMALLBOOTSTART
+#endif
 .equ F_CPU = 16000000
-.endif
-.ifndef BAUD
 .equ BAUD = 38400
-.endif
 
 ; device specific boofa configuration
-.equ DEVBOOT = SMALLBOOTSTART
 .equ DEVCODE = 0x44
 
 ; device specific register handling

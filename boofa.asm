@@ -10,6 +10,7 @@
 
 ; put boot loader into boot section
 .org	DEVBOOT
+boofa_start:
 	clr	zerol
 	clr	zeroh
         ldi	genl, LOW(RAMEND)
@@ -20,16 +21,17 @@
 	rcall	uart_init
 	rcall	uart_drain
 	
+boofa_restart:
 	boot	boofa_load
 boofa_appl:
-.ifndef	DEBUG
+#ifndef	DEBUG
 	movw	ZH:ZL, zeroh:zerol ;launch application if possible
 	lpm	YL, Z+
 	lpm	YH, Z+		;Y is first flash word
 	adiw	YH:YL, 1
 	breq	boofa_load	;no code?
 	jmp	0
-.endif
+#endif
 boofa_load:
 	boofa
 
@@ -126,8 +128,11 @@ boofa_cmd_B_F:
 	rjmp	boofa_fatal_error ;odd byte count???
 
 boofa_flash_pages:
-	cpiw	X, DEVBOOT
-	brsh	boofa_fatal_error ;overwrite boofa???
+	mov	genh, XH
+	lsr	genh
+	cpi	genh,DEVBOOT/512
+	breq	boofa_fatal_error ;overwrite boofa???
+boofa_appl_code:
         movw	ZH:ZL, XH:XL
 	andiw	Z, PAGESIZE-1
 	lsl	ZL
@@ -338,7 +343,7 @@ boofa_cmd_E_:
 	boofa_prog_off
 	boofa_led_off
 
-        rjmp	boofa_appl
+        rjmp	boofa_restart
 
         ; get programmer type
 boofa_cmd_p:
@@ -475,3 +480,7 @@ boofa_cmd_unknown:
 .include "spm.asm"
 .include "uart.asm"
 
+boofa_end:
+.if	(boofa_end - boofa_start) > 512
+	.error	"BOOFA SIZE EXCEEDS 512 WORDS"	
+.endif

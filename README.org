@@ -1,5 +1,5 @@
 # -*- Mode: Org; Coding: utf-8 -*-
-#+TITLE: BOOFA - an AVR109 bootloader
+#+TITLE: BOOFA - An AVR109 compliant bootloader
 #+AUTHOR: Enoch
 #+EMAIL: ixew@hotmail.com
 #+OPTIONS: email:t
@@ -11,9 +11,10 @@ This Atmel AVR8 bootloader was derived from [[http://www.roland-riegel.de/boofa/
 
 * Set-up
 
-BOOFA fits the smallest 1KB boot size. Set Fuse High Byte to BOOTSZ1=1, BOOTSZ0=1, BOOTRST=1. Tailor boof_config.asm and Makefile to suit your application.
+BOOFA size is less than 512 words. BIGFOOT is a Makefile option to build/install BOOFA starting at LARGEBOOTSTART. Otherwise, BOOFA starts at SMALLBOOTSTART. Adjust Makefile and boofa_config.asm to
+suit your project.
 
-** Local project notes
+* Local project notes
 
 1. BOOFA is launched (GREEN LED ON) if a TP5-TP6 link is detected (RED LED OFF) or when the application code is missing (RED LED ON). Otherwise, the application is launched (RED LED ON).
 2. When BOOFA executes the AVR109 /Programming Mode/ is indicated by RED LED and only under this mode ("P") the Flash/EEPROM write commands ("B") would be recognized. On "B" command error, such as
