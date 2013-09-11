@@ -14,11 +14,16 @@ This Atmel AVR8 bootloader was derived from [[http://www.roland-riegel.de/boofa/
 BOOFA size is less than 512 words. BIGFOOT is a Makefile option to build/install BOOFA starting at LARGEBOOTSTART. Otherwise, BOOFA starts at SMALLBOOTSTART. Adjust Makefile and boofa_config.asm to
 suit your project.
 
+* Notes
+
++ Block write commands ("B") are up-to SRAM-SIZE/2 bytes buffered ("b").
++ Two command extensions: "z" reports the address register value. "Z" returns the product identification string.
+
 * Local project notes
 
-1. BOOFA is launched (GREEN LED ON) if a TP5-TP6 link is detected (RED LED OFF) or when the application code is missing (RED LED ON). Otherwise, the application is launched (RED LED ON).
-2. When BOOFA executes the AVR109 /Programming Mode/ is indicated by RED LED and only under this mode ("P") the Flash/EEPROM write commands ("B") would be recognized. On "B" command error, such as
-   trying to reprogram the boot, /Programming Mode/ would be aborted ("L").
++ BOOFA is launched (GREEN LED ON) if a TP5-TP6 link is detected (RED LED OFF) or when the application code is missing (RED LED ON). Otherwise, the application is launched (RED LED ON).
++ When BOOFA executes the AVR109 /Programming Mode/ is indicated by RED LED and only under this mode ("P") the Flash/EEPROM write commands ("B") would be recognized. On "B" command error, such as
+  trying to reprogram the boot, /Programming Mode/ would be aborted ("L").
   
 
 

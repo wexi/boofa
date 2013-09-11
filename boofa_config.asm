@@ -147,6 +147,7 @@
 .endmacro
 
 .equ	CR = 0x0d
+.equ	LF = 0x0a
 
 .macro	boot
 	sbi_	PORTB, 4	;input TP6 pulled high

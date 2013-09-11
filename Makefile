@@ -1,5 +1,7 @@
-# will not launch application if DEBUG is defined
-# will place BOOFA at LARGEBOOTSTART if BIGFOOT is defined
+# EXTRA definitions:
+# don't launch application on "E" if DEBUG is defined
+# place BOOFA at LARGEBOOTSTART if BIGFOOT is defined
+# introduce oem.asm to "Z" command if OEM is defined
 EXTRA := -D BIGFOOT
 
 MAIN := boofa

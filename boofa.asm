@@ -450,13 +450,19 @@ boofa_cmd_s:
 	; extension: report address 
 boofa_cmd_z:
 	cpi	genl, 'z'
-	brne	boofa_cmd_ESC
+	brne	boofa_cmd_oem
 	
 	movw	genh:genl, XH:XL
 	rcall	uart_xmtw
 
 	rjmp	boofa_loop
 
+boofa_cmd_oem:	
+	cpi	genl, 'Z'
+	brne	boofa_cmd_ESC
+	ldz	oem_string
+	rcall	uart_send
+        rjmp	boofa_loop
         ; sync
 boofa_cmd_ESC:
         cpi	genl, 0x1b
@@ -479,6 +485,13 @@ boofa_cmd_unknown:
 .include "lock.asm"
 .include "spm.asm"
 .include "uart.asm"
+	
+oem_string:
+#ifdef	OEM
+.include "oem.asm"
+#else
+ .db	"https://github.com/wexi/boofa", CR, LF, 0
+#endif
 
 boofa_end:
 .if	(boofa_end - boofa_start) > 512
