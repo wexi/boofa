@@ -1,7 +1,8 @@
-# EXTRA definitions:
-# don't launch application on "E" if DEBUG is defined
-# place BOOFA at LARGEBOOTSTART if BIGFOOT is defined
-# introduce oem.asm to "Z" command if OEM is defined
+# EXTRA (-D) definitions:
+# DEBUG -- don't launch application on "E"
+# BIGFOOT -- place BOOFA starting at LARGEBOOTSTART
+# OEM -- use oem.asm by "Z" command
+# PANIC -- leave programming mode if trying to rewrite the boot sector 
 EXTRA := -D BIGFOOT
 
 MAIN := boofa

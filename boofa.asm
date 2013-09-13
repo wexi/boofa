@@ -130,8 +130,12 @@ boofa_cmd_B_F:
 boofa_flash_pages:
 	mov	genh, XH
 	lsr	genh
-	cpi	genh,DEVBOOT/512
-	breq	boofa_fatal_error ;overwrite boofa???
+	cpi	genh,DEVBOOT/512 ;boofa overwrite?
+#ifdef	PANIC
+	breq	boofa_fatal_error
+#else
+	in_	genh, SREG	;set Z on overwrite
+#endif
 boofa_appl_code:
         movw	ZH:ZL, XH:XL
 	andiw	Z, PAGESIZE-1
@@ -140,6 +144,9 @@ boofa_appl_code:
 boofa_flash_buffer:
 	ld	r0, Y+
 	ld	r1, Y+
+#ifndef	PANIC
+	sbrs	genh, 1		;skip on boofa overlap
+#endif
         rcall	flash_write_word
 	sbiw	WH:WL, 2
 	adiw	XH:XL, 1
@@ -152,6 +159,9 @@ boofa_flash_buffer:
 boofa_flash_page:
 	sbiw	XH:XL, 1
         rcall	flash_set_addr
+#ifndef	PANIC	
+	sbrs	genh, 1		;skip on boofa overlap
+#endif
         rcall	flash_write_page
 	adiw	XH:XL, 1
 	tstw	W
