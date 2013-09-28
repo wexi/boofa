@@ -3,7 +3,7 @@
 # BIGFOOT -- place BOOFA starting at LARGEBOOTSTART
 # OEM -- use oem.asm by "Z" command
 # PANIC -- leave programming mode if trying to rewrite the boot sector 
-EXTRA := -D BIGFOOT
+EXTRA := -D BIGFOOT -D OEM
 
 MAIN := boofa
 ASM := $(MAIN).asm

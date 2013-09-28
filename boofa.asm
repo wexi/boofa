@@ -353,7 +353,7 @@ boofa_cmd_E_:
 	boofa_prog_off
 	boofa_led_off
 
-        rjmp	boofa_restart
+        rjmp	boofa_appl
 
         ; get programmer type
 boofa_cmd_p:
