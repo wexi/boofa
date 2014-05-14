@@ -7,7 +7,8 @@
 
 * General
 
-This Atmel AVR8 bootloader was derived from [[http://www.roland-riegel.de/boofa/][Roland Riegel's BOOFA code]] by [[https://github.com/wexi?tab%3Drepositories][Enoch]]. It is governed by a GPLv2 license.
+This 8 bit AVR microcontroller bootloader/programmer is an extended implementation of Atmel's [[http://www.atmel.com/images/doc1644.pdf][AVR109 self programming protocol]]. The code was derived from [[http://www.roland-riegel.de/boofa/][Roland Riegel's BOOFA project]] by [[https://github.com/wexi?tab%3Drepositories][Enoch]] and it
+is governed by a GPLv2 license.
 
 * Set-up
 
@@ -16,8 +17,15 @@ suit your project.
 
 * Notes
 
-+ Block write commands ("B") are up-to SRAM-SIZE/2 bytes buffered ("b").
-+ Two command extensions: "z" reports the address register value. "Z" returns the product identification string.
+** Block write commands ("B" and "g") are up-to SRAM-SIZE/2 bytes buffered ("b").
+
+** Three command extensions: 
+
+1. "z" reports the address register value. 
+2. "Z" returns the product identification string.
+3. Available since firmware version "02":\\
+ "G<2*dd>F" and "G<2*dd>E" return the character "1" if, respectively, the addressed <2*dd> bytes long Flash or EEprom block is completely erased. Otherwise, "0" returns followed by the block bytes as
+   in an ordinary "g<2*dd>F" and "g<2*dd>E" commands.
 
 * Local project notes
 

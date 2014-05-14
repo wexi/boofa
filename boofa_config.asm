@@ -34,15 +34,19 @@
 .equ RXC = RXC0
 .equ FE = FE0
 
-.def zerol = r2
-.def zeroh = r3
-.def genl = r16
-.def genh = r17
+.def ZEROl = r2
+.def ZEROh = r3
+.def TEMPWl = r4		;W save
+.def TEMPWh = r5
+.def TEMPXl = r6		;X save
+.def TEMPXh = r7
+.def GENl = r16
+.def GENh = r17
 	
 .def spad = r20			;for temporary macro use only
 
-.def WL = r24			;W is adiw/sbiw capable
-.def WH = r25
+.def Wl = r24			;W is adiw/sbiw capable
+.def Wh = r25
 ; X - AVR109 address pointer
 
 .macro	ldiw
