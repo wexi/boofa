@@ -12,10 +12,17 @@ LIST := $(MAIN).lst
 SOURCES := $(wildcard *.asm)
 DEF := can128def.inc
 MFC := c128
+DEV := /dev/ttyUSB0
+JTAG ?= 2
 
 ATMEL := $(HOME)/avr/Atmel/AVR\ Tools/AvrAssembler2
 XASM := wine $(ATMEL)/avrasm2.exe -fI -I $(ATMEL)/Appnotes
+ifeq ($(JTAG),1)
+DUDE := avrdude -P $(DEV) -c jtag1 -B 4 -p $(MFC)
+endif
+ifeq ($(JTAG),2)
 DUDE := avrdude -P usb -c jtag2 -p $(MFC)
+endif
 
 all: $(HEX)
 
@@ -33,4 +40,3 @@ clean:
 	rm -f $(HEX) $(LIST)
 
 .PHONY: all clean install
-
