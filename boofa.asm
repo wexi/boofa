@@ -174,7 +174,10 @@ boofa_cmd_B_E:
         brne	boofa_cmd_B_unknown
 
 boofa_cmd_B_E_byte:
+	rcall	eeprom_read
+	mov	GENh,GENl
 	ld	GENl, Y+
+	cpse	GENl,GENh
         rcall	eeprom_write
 	adiw	Xh:Xl, 1
 	sbiw	Wh:Wl, 1
@@ -477,7 +480,7 @@ boofa_cmd_V_:
 
         ldi	GENl, '0'
         rcall	uart_xmt
-        ldi	GENl, '2'
+        ldi	GENl, '3'
         rcall	uart_xmt
 
         rjmp	boofa_loop

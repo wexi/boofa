@@ -7,12 +7,16 @@
 
 * General
 
-This 8 bit AVR microcontroller bootloader/programmer is an extended implementation of Atmel's [[http://www.atmel.com/images/doc1644.pdf][AVR109 self programming protocol]]. The code was derived from [[http://www.roland-riegel.de/boofa/][Roland Riegel's BOOFA project]] by [[https://github.com/wexi?tab%3Drepositories][Enoch]] and it
-is governed by a GPLv2 license.
+This 8 bit AVR microcontroller bootloader/programmer is an extended
+implementation of Atmel's [[http://www.atmel.com/images/doc1644.pdf][AVR109 self programming protocol]]. The code
+was derived from [[http://www.roland-riegel.de/boofa/][Roland Riegel's BOOFA project]] by [[https://github.com/wexi?tab%3Drepositories][Enoch]] and it is
+governed by a GPLv2 license.
 
 * Set-up
 
-BOOFA size is less than 512 words. BIGFOOT is a Makefile option to build/install BOOFA starting at LARGEBOOTSTART. Otherwise, BOOFA starts at SMALLBOOTSTART. Adjust Makefile and boofa_config.asm to
+BOOFA size is less than 512 words. BIGFOOT is a Makefile option to
+build/install BOOFA starting at LARGEBOOTSTART. Otherwise, BOOFA
+starts at FLASHEND ^ $1FF. Adjust Makefile and boofa_config.asm to
 suit your project.
 
 * Notes
@@ -24,14 +28,21 @@ suit your project.
 1. "z" reports the address register value. 
 2. "Z" returns the product identification string.
 3. Available since firmware version "02":\\
- "G<2*dd>F" and "G<2*dd>E" return the character "1" if, respectively, the addressed <2*dd> bytes long Flash or EEprom block is completely erased. Otherwise, "0" returns followed by the block bytes as
-   in an ordinary "g<2*dd>F" and "g<2*dd>E" commands.
+   "G<2*dd>F" and "G<2*dd>E" return the character "1" if,
+   respectively, the addressed <2*dd> bytes long Flash or EEprom block
+   is completely erased. Otherwise, "0" returns followed by the block
+   bytes as in an ordinary "g<2*dd>F" and "g<2*dd>E" commands.
 
 * Local project notes
 
-+ BOOFA is launched (GREEN LED ON) if a TP5-TP6 link is detected (RED LED OFF) or when the application code is missing (RED LED ON). Otherwise, the application is launched (RED LED ON).
-+ When BOOFA executes the AVR109 /Programming Mode/ is indicated by RED LED and only under this mode ("P") the Flash/EEPROM write commands ("B") would be recognized. On "B" command error, such as
-  trying to reprogram the boot (-D PANIC), /Programming Mode/ would be aborted ("L").
++ BOOFA is launched (GREEN LED ON) if a TP5-TP6 link is detected (RED
+  LED OFF) or when the application code is missing (RED LED
+  ON). Otherwise, the application is launched (RED LED ON).
++ When BOOFA executes the AVR109 /Programming Mode/ is indicated by
+  RED LED and only under this mode ("P") the Flash/EEPROM write
+  commands ("B") would be recognized. On "B" command error, such as
+  trying to reprogram the boot (-D PANIC), /Programming Mode/ would be
+  aborted ("L").
   
 
 
