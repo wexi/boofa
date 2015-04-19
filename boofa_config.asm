@@ -153,16 +153,17 @@
 .equ	CR = 0x0d
 .equ	LF = 0x0a
 
-.macro	boot
+.macro	boot			;
 	sbi_	PORTB, 4	;input TP6 pulled high
 	sbi_	DDRB, 5		;output TP5 low
+	nop			;discharge time
 	sbis_	PINB, 4		;skip if TP6 ≠ TP5
 	rjmp	@0		;boot loader
 	sbi_	DDRE, 5		;boot application
 	sbi_	PORTE, 5	;RED LED ON
 .endmacro
 	
-.macro	boofa
+.macro	boofa			;indicate entering boofa
 	sbi_	DDRB, 7
 	sbi_	PORTB, 7	;GREEN LED ON
 	sbi_	DDRD, 7		;CTS ON

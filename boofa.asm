@@ -22,17 +22,17 @@ boofa_start:
 	rcall	uart_drain
 	
 boofa_restart:
-	boot	boofa_load
+	boot	boofa_exec
 boofa_appl:
 #ifndef	DEBUG
 	movw	Zh:Zl, zeroh:zerol ;launch application if possible
 	lpm	Yl, Z+
 	lpm	Yh, Z+		;Y is first flash word
 	adiw	Yh:Yl, 1
-	breq	boofa_load	;no code?
+	breq	boofa_exec	;no code?
 	jmp	0
 #endif
-boofa_load:
+boofa_exec:
 	boofa
 
 	movw	Xh:Xl, zeroh:zerol ;reset address pointer
@@ -480,7 +480,7 @@ boofa_cmd_V_:
 
         ldi	GENl, '0'
         rcall	uart_xmt
-        ldi	GENl, '3'
+        ldi	GENl, '4'
         rcall	uart_xmt
 
         rjmp	boofa_loop

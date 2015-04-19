@@ -1,5 +1,5 @@
 # EXTRA (-D) definitions:
-# DEBUG -- don't launch application on "E"
+# DEBUG -- invoke boofa unconditionally
 # BIGFOOT -- place BOOFA starting at LARGEBOOTSTART
 # OEM -- use oem.asm by "Z" command
 # PANIC -- leave programming mode if trying to rewrite the boot sector 
