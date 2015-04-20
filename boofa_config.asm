@@ -153,7 +153,7 @@
 .equ	CR = 0x0d
 .equ	LF = 0x0a
 
-.macro	boot			;
+.macro	boot			;to boot (continue) or to boofa (rjmp)
 	sbi_	PORTB, 4	;input TP6 pulled high
 	sbi_	DDRB, 5		;output TP5 low
 	nop			;discharge time
@@ -170,11 +170,11 @@
 .endmacro
 
 .macro	boofa_led_on
-	sbi_	PORTB, 7	;green led off
+	sbi_	PORTB, 7	;green led on
 .endmacro
 
 .macro	boofa_led_off
-	cbi_	PORTB, 7	;green led on
+	cbi_	PORTB, 7	;green led off
 .endmacro
 
 .macro	boofa_prog_on
