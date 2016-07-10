@@ -15,7 +15,7 @@ uart_init:
         out_	UBRRH, genl
 
         ; frame format: 8 bit, no parity, 1 bit
-        ldi	genl, UCSRC_SELECT | (1 << UCSZ1) | (1 << UCSZ0)
+        ldi	genl, (1 << URSEL) | (1 << UCSZ1) | (1 << UCSZ0)
         out_	UCSRC, genl
 
         ; enable serial receiver and transmitter

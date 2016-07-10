@@ -7,10 +7,10 @@
 
 spm_rww_enable:
         ldi	genl, (1 << RWWSRE) | (1 << SPMEN)
-        out_	SPMCSR, genl
+        out_	SPMCR, genl
 spm_do:
 	spm
 spm_doing:
-	sbic_	SPMCSR, SPMEN
+	sbic_	SPMCR, SPMEN
         rjmp	spm_doing
         ret

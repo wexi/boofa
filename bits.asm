@@ -11,7 +11,7 @@ bits_read: ; genl (in): fuse or lock identifier
         clr	ZH
 
         ldi	genl, (1 << BLBSET) | (1 << SPMEN)
-        out_	SPMCSR, genl
+        out_	SPMCR, genl
         lpm	genl, Z
         ret
 
@@ -21,6 +21,6 @@ bits_write: ; genl (in): fuse or lock identifier
         clr	ZH
 
         ldi	genl, (1 << BLBSET) | (1 << SPMEN)
-        out_	SPMCSR, genl
+        out_	SPMCR, genl
         rjmp	spm_do
 

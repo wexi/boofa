@@ -1,9 +1,9 @@
 # EXTRA (-D) definitions:
-# DEBUG -- invoke boofa unconditionally
+# DEBUG -- invoke boofa unconditionally, enable OCD
 # BIGFOOT -- place BOOFA starting at LARGEBOOTSTART
 # OEM -- replace "Z" command string with oem.asm 
 # PANIC -- leave programming mode if trying to rewrite the boot sector
-EXTRA := -D OEM -D DEBUG
+EXTRA := -D OEM
 
 MAIN := boofa
 ASM := $(MAIN).asm
@@ -13,19 +13,12 @@ SOURCES := $(wildcard *.asm)
 DEF := m162def.inc
 MCU := atmega162
 MFC := m162
-DEV := /dev/ttyUSB0
-JTAG ?= 2
+TTY := /dev/ttyUSB1
 
 ATMEL := $(HOME)/avr/Atmel/AVR\ Tools/AvrAssembler2
 XASM := wine $(ATMEL)/avrasm2.exe -fI -I $(ATMEL)/Appnotes
-ifeq ($(JTAG),1)
-DUDE := avrdude -P $(DEV) -c jtag1 -B 4 -p $(MFC)
-ICE  := avarice --jtag $(DEV) --jtag-bitrate 125 --part $(MCU)
-endif
-ifeq ($(JTAG),2)
 DUDE := avrdude -P usb -c jtag2 -p $(MFC)
 ICE  := avarice --jtag usb --mkII --part $(MCU)
-endif
 
 ifeq (,$(findstring BIGFOOT,$(EXTRA)))
 ifeq (,$(findstring DEBUG,$(EXTRA)))
@@ -59,7 +52,10 @@ read-fuses:
 reset:
 	$(ICE) --reset-srst
 
+tty:
+	avrdude -P $(TTY) -b 38400 -c avr109 -p $(MFC) -t
+
 clean:
 	rm -f $(HEX) $(LIST)
 
-.PHONY: all install read-fuses reset clean
+.PHONY: all install read-fuses reset tty clean

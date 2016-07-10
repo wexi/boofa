@@ -16,7 +16,7 @@ flash_erase_page:
 
         rcall	flash_set_addr
         ldi	genl, (1 << PGERS) | (1 << SPMEN)
-        out_	SPMCSR, genl
+        out_	SPMCR, genl
         rcall	spm_do
 
 flash_erase_next:
@@ -32,12 +32,12 @@ flash_read_word:
         
 flash_write_word:
         ldi	genl, (1 << SPMEN)
-        out_	SPMCSR, genl
+        out_	SPMCR, genl
         rjmp	spm_do
 
 flash_write_page:
         ldi	genl, (1 << PGWRT) | (1 << SPMEN)
-        out_	SPMCSR, genl
+        out_	SPMCR, genl
         rcall	spm_do
         rjmp	spm_rww_enable
 

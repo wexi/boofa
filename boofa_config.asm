@@ -16,39 +16,25 @@
 .equ F_CPU = 7372800
 .equ BAUD = 38400
 
-; device specific boofa configuration
+; AVR109 device type:
 .equ DEVCODE = 0x44
 
-; device specific register handling
-.equ UBRRH = UBRR0H
-.equ UBRRL = UBRR0L
-.ifndef UDR
-.equ UDR = UDR0
-.endif
-.equ UCSRA = UCSR0A
-.equ UCSRB = UCSR0B
-.equ UCSRC = UCSR0C
-.equ UCSRC_SELECT = 0
-.equ UCSZ0 = UCSZ00
-.equ UCSZ1 = UCSZ01
-.ifndef	RXEN
-.equ RXEN = RXEN0
-.endif
-.ifndef TXEN
-.equ TXEN = TXEN0
-.endif
-.ifndef	UDRE
-.equ UDRE = UDRE0
-.endif
-.ifndef	RXC
-.equ RXC = RXC0
-.endif
-.ifndef FE
-.equ FE = FE0
-.endif
-.ifndef	SPMCSR
-.equ	SPMCSR = SPMCR	
-.endif
+; USART selection:
+.equ UBRRH = UBRR1H
+.equ UBRRL = UBRR1L
+.equ UDR = UDR1
+.equ UCSRA = UCSR1A
+.equ UCSRB = UCSR1B
+.equ UCSRC = UCSR1C
+	
+.equ URSEL = URSEL1
+.equ UCSZ0 = UCSZ10
+.equ UCSZ1 = UCSZ11
+.equ RXEN = RXEN1
+.equ TXEN = TXEN1
+.equ UDRE = UDRE1
+.equ RXC = RXC1
+.equ FE = FE1
 	
 .def ZEROl = r2
 .def ZEROh = r3
