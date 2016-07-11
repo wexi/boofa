@@ -36,29 +36,29 @@
 .equ RXC = RXC1
 .equ FE = FE1
 	
-.def ZEROl = r2
-.def ZEROh = r3
-.def TEMPWl = r4		;W save
-.def TEMPWh = r5
-.def TEMPXl = r6		;X save
-.def TEMPXh = r7
-.def GENl = r16
-.def GENh = r17
+.def zerol = r2
+.def zeroh = r3
+.def tempwl = r4		;W save
+.def tempwh = r5
+.def tempxl = r6		;X save
+.def tempxh = r7
+.def genl = r16
+.def genh = r17
 	
 .def spad = r20			;for temporary macro use only
 
-.def Wl = r24			;W is adiw/sbiw capable
-.def Wh = r25
+.def wl = r24			;W is adiw/sbiw capable
+.def wh = r25
 ; X - AVR109 address pointer
 
 .macro	ldiw
-	ldi	@0L, LOW(@1)
-	ldi	@0H, HIGH(@1)
+	ldi	@0l, low(@1)
+	ldi	@0h, high(@1)
 .endmacro
 
 .macro	subiw
-	subi	@0L, LOW(@1)
-	sbci	@0H, HIGH(@1)
+	subi	@0l, low(@1)
+	sbci	@0h, high(@1)
 .endmacro
 
 .macro	addiw
@@ -66,19 +66,19 @@
 .endmacro
 
 .macro	andiw
-	andi	@0L, LOW(@1)
-	andi	@0H, HIGH(@1)
+	andi	@0l, low(@1)
+	andi	@0h, high(@1)
 .endmacro
 
 .macro	cpiw
-	ldi	spad, HIGH(@1)
-	cpi	@0L, LOW(@1)
-	cpc	@0H, spad
+	ldi	spad, high(@1)
+	cpi	@0l, low(@1)
+	cpc	@0h, spad
 .endmacro	
 
 .macro	tstw
-	mov	spad, @0L
-	or	spad, @0H
+	mov	spad, @0l
+	or	spad, @0h
 .endmacro
 	
 .macro	in_

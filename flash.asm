@@ -6,10 +6,10 @@
 ; published by the Free Software Foundation.
 
 flash_erase:
-        movw	XH:XL, zeroh:zerol
+        movw	xh:xl, zeroh:zerol
 
 flash_erase_page:
-	mov	genh, XH
+	mov	genh, xh
 	lsr	genh
 	cpi	genh, DEVBOOT/512
 	breq	flash_erase_next ;skip bootloader area
@@ -20,7 +20,9 @@ flash_erase_page:
         rcall	spm_do
 
 flash_erase_next:
-	addiw	X, PAGESIZE
+	addiw	x, PAGESIZE
+	andiw	x, FLASHEND
+	tstw	x
 	brne	flash_erase_page
         ret
 
@@ -42,9 +44,9 @@ flash_write_page:
         rjmp	spm_rww_enable
 
 flash_set_addr:
-        movw	ZH:ZL, XH:XL
-        lsl	ZL
-        rol	ZH
+        movw	zh:zl, xh:xl
+        lsl	zl
+        rol	zh
 .if FLASHEND >= 0x8000
 	rol	zerol
 	out_	RAMPZ, zerol

@@ -6,27 +6,27 @@
 ; published by the Free Software Foundation.
 
         ; reads a single byte from eeprom memory
-eeprom_read: ; XH:XL (in,out): address
+eeprom_read: ; xh:xl (in,out): address
              ; genl (out): data
         sbic_	EECR, EEWE
         rjmp	eeprom_read
 	
-        out_	EEARH, XH
-        out_	EEARL, XL
+        out_	EEARH, xh
+        out_	EEARL, xl
         sbi_	EECR, EERE
         in_	genl, EEDR
 
         ret
 
         ; writes a single byte to eeprom memory
-eeprom_write: ; XH:XL (in,out): address
+eeprom_write: ; xh:xl (in,out): address
               ; genl (in): data byte
 
         sbic_	EECR, EEWE
         rjmp	eeprom_write
 
-        out_	EEARH, XH
-        out_	EEARL, XL
+        out_	EEARH, xh
+        out_	EEARL, xl
         out_	EEDR, genl
 
         sbi_	EECR, EEMWE
