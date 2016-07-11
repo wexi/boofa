@@ -24,11 +24,14 @@ boofa_start:
 boofa_restart:
 	boot	boofa_exec
 boofa_appl:
-#ifndef	DEBUG
+#ifdef	DEBUG
+	ldz	boofa_debug
+	rcall	uart_send
+#else	
 	movw	zh:zl, zeroh:zerol ;launch application if possible
-	lpm	Yl, Z+
-	lpm	Yh, Z+		;Y is first flash word
-	adiw	Yh:Yl, 1
+	lpm	yl, Z+
+	lpm	yh, Z+		;Y is first flash word
+	adiw	yh:yl, 1
 	breq	boofa_exec	;no code?
 	jmp	0
 #endif
@@ -111,12 +114,12 @@ boofa_cmd_B_:
 	brsh	boofa_fatal_error ;zero or more than buffer capacity???
 	
         ; get type & data into SRAM
-	movw	Yh:Yl, wh:wl
+	movw	yh:yl, wh:wl
 	ldiw	Z, SRAM_START
 boofa_data:
 	rcall	uart_rec
 	st	Z+, genl
-	sbiw	Yh:Yl, 1
+	sbiw	yh:yl, 1
 	brcc	boofa_data	;block-size+1 to account for F/E type
 
 	ldiw	Y, SRAM_START
@@ -154,7 +157,7 @@ boofa_flash_buffer:
 	adiw	zh:zl, 2
 	cpiw	Z, PAGESIZE << 1
 	breq	boofa_flash_page
-	tstw	W
+	tstw	w
 	brne	boofa_flash_buffer
 	
 boofa_flash_page:
@@ -165,7 +168,7 @@ boofa_flash_page:
 #endif
         rcall	flash_write_page
 	adiw	xh:xl, 1
-	tstw	W
+	tstw	w
 	brne	boofa_flash_pages
 	rjmp	boofa_cmd_B_common
 
@@ -544,7 +547,12 @@ oem_string:
 #else
  .db	"https://github.com/wexi/boofa", CR, LF, 0
 #endif
-
+	
+#ifdef	DEBUG
+boofa_debug:	
+.db	"BOOFA DEBUG", CR, LF, 0	
+#endif
+	
 boofa_end:
 .if	(boofa_end - boofa_start) > 512
 	.error	"BOOFA SIZE EXCEEDS 512 WORDS"	
