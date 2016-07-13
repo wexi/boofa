@@ -17,7 +17,7 @@
 .equ BAUD = 38400
 
 ; AVR109 device type:
-.equ DEVCODE = 0x44
+.equ DEVCODE = 0x63		;ATMEGA162 (AVR109)
 
 ; USART selection:
 .equ UBRRH = UBRR1H

@@ -24,8 +24,8 @@ boofa_start:
 boofa_restart:
 	boot	boofa_exec
 boofa_appl:
-#ifdef	DEBUG
-	ldz	boofa_debug
+#ifdef	DEVEL
+	ldz	boofa_debug	;invoke BOOFA unconditionally 
 	rcall	uart_send
 #else	
 	movw	zh:zl, zeroh:zerol ;launch application if possible
@@ -548,9 +548,9 @@ oem_string:
  .db	"https://github.com/wexi/boofa", CR, LF, 0
 #endif
 	
-#ifdef	DEBUG
+#ifdef	DEVEL
 boofa_debug:	
-.db	"BOOFA DEBUG", CR, LF, 0	
+.db	"BOOFA", CR, LF, 0	
 #endif
 	
 boofa_end:
