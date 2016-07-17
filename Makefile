@@ -49,7 +49,8 @@ $(HEX): $(SOURCES) Makefile
 	$(XASM) $(EXTRA) -o $(HEX) -l $(LIST) -i $(DEF) $(ASM)
 
 install: $(HEX)
-	$(DUDE) -e -U flash:w:$(HEX):i -U lock:w:$(LOCKB):m -U efuse:w:0xFD:m -U hfuse:w:$(HFUSE):m -U lfuse:w:0xCF:m
+	$(DUDE) -e -U flash:w:$(HEX):i -U lock:w:$(LOCKB):m \
+	-U efuse:w:0xFD:m -U hfuse:w:$(HFUSE):m -U lfuse:w:0xCF:m
 
 read-fuses:
 	$(ICE) --read-fuses
